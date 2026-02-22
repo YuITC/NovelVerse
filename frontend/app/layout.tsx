@@ -10,10 +10,23 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: {
+    default: "NovelVerse — Đọc truyện online",
     template: "%s | NovelVerse",
-    default: "NovelVerse — Đọc Truyện Trung Quốc Tiếng Việt",
   },
-  description: "Nền tảng đọc tiểu thuyết mạng Trung Quốc hàng đầu bằng tiếng Việt.",
+  description: "Nền tảng đọc truyện chữ Trung Quốc và tiểu thuyết online hàng đầu Việt Nam.",
+  keywords: ["đọc truyện", "truyện online", "tiểu thuyết", "truyện Trung Quốc", "NovelVerse"],
+  openGraph: {
+    type: "website",
+    locale: "vi_VN",
+    siteName: "NovelVerse",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

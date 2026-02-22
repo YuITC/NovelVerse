@@ -1,8 +1,19 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core.config import settings
+from app.core.exceptions import (
+    _setup_logging,
+    http_exception_handler,
+    validation_exception_handler,
+    unhandled_exception_handler,
+)
+from app.core.rate_limit import rate_limit
 from app.api.v1.router import api_router
+
+_setup_logging()
 
 app = FastAPI(
     title="NovelVerse API",
@@ -19,4 +30,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(api_router, prefix=settings.api_prefix)
+# Register exception handlers
+app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(Exception, unhandled_exception_handler)
+
+# Include API router with global rate limiting dependency
+app.include_router(
+    api_router,
+    prefix=settings.api_prefix,
+    dependencies=[Depends(rate_limit)],
+)

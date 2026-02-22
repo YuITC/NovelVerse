@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str = ""
     stripe_publishable_key: str = ""
 
+    # Upstash Redis (optional — rate limiting disabled if not set)
+    upstash_redis_url: str = ""
+    upstash_redis_token: str = ""
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 
