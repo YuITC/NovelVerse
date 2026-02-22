@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from app.core.deps import require_role
 from app.models.novel import TagCreate, TagPublic
@@ -30,3 +30,15 @@ async def update_tag(tag_id: str, data: TagCreate, _=Depends(require_role("admin
 @router.delete("/tags/{tag_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_tag(tag_id: str, _=Depends(require_role("admin"))):
     get_supabase().table("tags").delete().eq("id", tag_id).execute()
+
+
+@router.post("/crawl/trigger")
+async def trigger_crawl(
+    background_tasks: BackgroundTasks,
+    novel_id: str | None = None,
+    _: dict = Depends(require_role("admin")),
+):
+    """Trigger the crawl worker as a background task."""
+    from app.workers.crawl_worker import run_crawl_job
+    background_tasks.add_task(run_crawl_job, novel_id)
+    return {"message": "Crawl job started", "novel_id": novel_id}

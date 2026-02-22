@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useUser } from "@/lib/hooks/use-user";
 import { apiFetch } from "@/lib/api";
 import { Input } from "@/components/ui/input";
@@ -91,9 +92,23 @@ export default function UploadPage() {
 
   if (!user) return null;
 
+  const isCrawlUser = user.role === "uploader" || user.role === "admin";
+
   return (
     <div className="container mx-auto max-w-2xl px-4 py-10">
-      <h1 className="mb-8 text-3xl font-bold">Đăng truyện mới</h1>
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <h1 className="text-3xl font-bold">Đăng truyện mới</h1>
+        {isCrawlUser && (
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/upload/crawl">Quản lý nguồn crawl</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/upload/queue">Xem hàng đợi</Link>
+            </Button>
+          </div>
+        )}
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
