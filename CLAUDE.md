@@ -62,10 +62,11 @@ supabase/
 - **Data security**: Row Level Security (RLS) policies at PostgreSQL level are the primary security layer
 - **Soft deletes**: All important content uses `is_deleted` flag, never hard delete
 - **Crawl pipeline**: URL → `crawl_queue` table → worker processes → Uploader review → publish
-- **VIP early access**: Chapters use `publish_at` scheduling to gate VIP Pro/Max content
+- **VIP early access**: Chapters use `publish_at` scheduling to gate VIP Pro/Max content. VIP is purchased with Linh Thạch (internal soft currency) — no external payment gateway.
+- **Virtual economy**: Dual-currency system — Linh Thạch (soft, buy via bank deposit) and Tiên Thạch (withdrawable, earned via gifting). Fixed rates: 1 VND → 0.95 LT, 1 LT → 0.95 TT, 1 TT = 1 VND.
 - **API convention**: RESTful at `/api/v1`, JWT Bearer in Authorization header
 - **Three user roles**: `reader`, `uploader`, `admin`
-- **Rate limiting**: Upstash Redis token bucket (100 req/min per user)
+- **Rate limiting**: Upstash Redis sliding window (100 req/min per user/IP)
 
 ## Frontend Patterns
 
@@ -85,22 +86,50 @@ supabase/
 
 ## Database
 
-14 PostgreSQL tables on Supabase. Key tables: `users` (extends `auth.users`), `novels` (with full-text search vector), `chapters` (dual scheduling: `publish_at` vs `published_at`), `comments` (unified for novel + chapter, 1-level reply), `reviews` (1-5 stars, one per user per novel), `nominations` (daily vote tracking), `vip_subscriptions`, `donations` (with commission calc).
+19 PostgreSQL tables on Supabase. Key tables:
+
+**Content**: `users` (extends `auth.users`), `novels` (with full-text search vector), `chapters` (dual scheduling: `publish_at` vs `published_at`), `comments` (unified for novel + chapter, 1-level reply), `reviews` (1-5 stars, one per user per novel)
+
+**Crawl**: `crawl_sources`, `crawl_queue`
+
+**VIP & Economy**: `vip_subscriptions` (Linh Thạch-based, no Stripe), `wallets` (LT + TT balances, auto-created per user), `transactions` (unified ledger — all balance changes logged), `deposit_requests` (bank transfer → LT, admin-confirmed), `shop_items` (10 items, seeded), `gift_logs` (LT spent → TT credited), `withdrawal_requests` (TT → VND, admin-processed)
+
+**Moderation**: `reports`, `feedbacks`
+
+**System**: `system_settings` (key-value store: VIP prices in LT, exchange rates, limits)
 
 Phase 3 AI tables: `characters`, `chat_sessions`, `novel_embeddings`.
 
 ## External Services
 
 - **Supabase**: DB, Auth, Storage, Realtime
-- **Upstash Redis**: Leaderboard caching, daily votes, crawl job queue
-- **Stripe**: VIP subscriptions, donations, commission payouts
+- **Upstash Redis**: Rate limiting, leaderboard caching, daily votes, crawl job queue
 - **Google Gemini API**: AI translation, chat with characters (Phase 3)
 - **ElevenLabs**: AI TTS narration (Phase 3)
 - **Qdrant Cloud**: Vector DB for RAG (Phase 3)
 - **Resend / Supabase Email**: Notifications
 
+## Economy API Routes (at /api/v1/)
+
+| Route | Description |
+|-------|-------------|
+| `GET /economy/wallet` | User's LT + TT balances |
+| `POST /economy/deposit` | Create bank deposit request (generates transfer code) |
+| `GET /economy/shop` | List shop items (public) |
+| `POST /economy/shop/{id}/purchase` | Buy item with LT |
+| `POST /economy/shop/{id}/gift` | Gift item to uploader (LT → TT) |
+| `POST /economy/withdrawal` | Uploader requests TT withdrawal |
+| `GET /economy/transactions` | Paginated transaction ledger |
+| `POST /vip/purchase` | Buy VIP Pro/Max with LT (instant) |
+| `GET /admin/deposits` | Admin: list deposit requests |
+| `PATCH /admin/deposits/{id}/confirm` | Admin: confirm deposit, credit LT |
+| `GET /admin/withdrawals` | Admin: list withdrawal requests |
+| `PATCH /admin/withdrawals/{id}/complete` | Admin: complete withdrawal, deduct TT |
+
 ## Development Phases
 
-1. **Phase 1 (MVP)**: Core reading, crawl pipeline, basic comments/reviews, VIP system
-2. **Phase 2**: Advanced features — nominations, leaderboards, donations, notifications
+1. **Phase 1 (MVP)**: Core reading, crawl pipeline, comments/reviews, VIP system, virtual economy — **COMPLETE**
+2. **Phase 2**: Advanced features — nominations, leaderboards, gifting/donations, notifications, CI/CD
 3. **Phase 3**: AI features — chat with characters (RAG), AI narrator (TTS)
+
+See `docs/DEVELOPMENT_PLAN.md` for the full milestone roadmap.

@@ -1,8 +1,23 @@
-import Link from "next/link";
-import { UserMenu } from "@/components/auth/user-menu";
-import { SearchBar } from "@/components/search/search-bar";
+"use client"
+
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { useUser } from "@/lib/hooks/use-user"
+import { apiFetch } from "@/lib/api"
+import { UserMenu } from "@/components/auth/user-menu"
+import { SearchBar } from "@/components/search/search-bar"
+import { WalletBadge } from "@/components/economy/wallet-badge"
+import type { Wallet } from "@/lib/types/economy"
 
 export function Navbar() {
+  const { user } = useUser()
+  const [wallet, setWallet] = useState<Wallet | null>(null)
+
+  useEffect(() => {
+    if (!user) { setWallet(null); return }
+    apiFetch<Wallet>("/economy/wallet").then(setWallet).catch(() => null)
+  }, [user])
+
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
       <div className="container mx-auto flex h-14 items-center justify-between gap-4 px-4">
@@ -29,12 +44,15 @@ export function Navbar() {
           >
             Thư viện
           </Link>
-          <Link
-            href="/vip"
-            className="font-medium text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
-          >
-            VIP
-          </Link>
+          {user && (
+            <Link
+              href="/wallet"
+              className="flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Ví
+              {wallet && <WalletBadge balance={wallet.linh_thach} />}
+            </Link>
+          )}
         </nav>
 
         <div className="flex flex-1 items-center justify-end gap-3">
@@ -43,5 +61,5 @@ export function Navbar() {
         </div>
       </div>
     </header>
-  );
+  )
 }

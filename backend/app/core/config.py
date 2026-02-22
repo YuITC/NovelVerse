@@ -12,15 +12,10 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:3000"]
     debug: bool = False
 
-    # AI (optional — no key means Gemini translation is unavailable)
+    # AI (optional -- no key means Gemini translation is unavailable)
     gemini_api_key: str = ""
 
-    # Stripe (optional — no key means Stripe payments are unavailable)
-    stripe_secret_key: str = ""
-    stripe_webhook_secret: str = ""
-    stripe_publishable_key: str = ""
-
-    # Upstash Redis (optional — rate limiting disabled if not set)
+    # Upstash Redis (optional -- rate limiting disabled if not set)
     upstash_redis_url: str = ""
     upstash_redis_token: str = ""
 

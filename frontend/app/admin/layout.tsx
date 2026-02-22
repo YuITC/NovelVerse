@@ -12,6 +12,8 @@ const NAV_ITEMS = [
   { href: "/admin/reports", label: "Báo cáo" },
   { href: "/admin/feedbacks", label: "Góp ý" },
   { href: "/admin/tags", label: "Thẻ" },
+  { href: "/admin/deposits", label: "Nạp tiền" },
+  { href: "/admin/withdrawals", label: "Rút tiền" },
   { href: "/admin/settings", label: "Cài đặt" },
 ];
 
@@ -44,7 +46,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar */}
       <aside className="w-56 shrink-0 border-r bg-muted/30 flex flex-col py-6 px-3 gap-1">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-3 mb-3">
           Quản trị
@@ -70,7 +71,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         })}
       </aside>
 
-      {/* Main content */}
       <main className="flex-1 overflow-auto">{children}</main>
     </div>
   );

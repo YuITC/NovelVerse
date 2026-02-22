@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 
 from app.core.deps import get_current_user, get_optional_user, require_role
 from app.models.novel import TagCreate, TagPublic
@@ -15,14 +15,20 @@ from app.models.admin import (
     FeedbackPublic,
     RespondFeedbackRequest,
 )
+from app.models.economy import DepositConfirmRequest, AdminDepositRejectRequest, AdminWithdrawalActionRequest
 from app.core.database import get_supabase
 from app.services import vip_service
 from app.services import admin_service
+from app.services import economy_service
 
 router = APIRouter(tags=["admin"])
 
 
-# ── Tags ──────────────────────────────────────────────────────────
+def require_admin(current_user: dict = Depends(require_role("admin"))) -> dict:
+    return current_user
+
+
+# -- Tags ---------------------------------------------------------------
 
 @router.get("/admin/tags", response_model=list[TagPublic])
 async def list_tags(_=Depends(require_role("admin"))):
@@ -49,7 +55,7 @@ async def delete_tag(tag_id: str, _=Depends(require_role("admin"))):
     get_supabase().table("tags").delete().eq("id", tag_id).execute()
 
 
-# ── Crawl ─────────────────────────────────────────────────────────
+# -- Crawl ---------------------------------------------------------------
 
 @router.post("/admin/crawl/trigger")
 async def trigger_crawl(
@@ -57,24 +63,12 @@ async def trigger_crawl(
     novel_id: str | None = None,
     _: dict = Depends(require_role("admin")),
 ):
-    """Trigger the crawl worker as a background task."""
     from app.workers.crawl_worker import run_crawl_job
     background_tasks.add_task(run_crawl_job, novel_id)
     return {"message": "Crawl job started", "novel_id": novel_id}
 
 
-# ── VIP ───────────────────────────────────────────────────────────
-
-@router.patch("/admin/vip/{subscription_id}/confirm")
-async def confirm_vip_bank_transfer(
-    subscription_id: str,
-    current_user: dict = Depends(require_role("admin")),
-):
-    """Admin confirms a bank transfer VIP payment."""
-    return vip_service.confirm_bank_transfer(subscription_id, current_user["id"])
-
-
-# ── Settings ──────────────────────────────────────────────────────
+# -- Settings ------------------------------------------------------------
 
 @router.get("/admin/settings")
 async def get_settings_admin(current_user: dict = Depends(require_role("admin"))):
@@ -90,7 +84,7 @@ async def update_setting(
     return vip_service.update_system_setting(key, body.get("value"))
 
 
-# ── User Management ───────────────────────────────────────────────
+# -- User Management -----------------------------------------------------
 
 @router.get("/admin/users", response_model=list[UserListItem])
 async def list_users(
@@ -99,7 +93,6 @@ async def list_users(
     offset: int = 0,
     _: dict = Depends(require_role("admin")),
 ):
-    """List all users with optional search by username."""
     return admin_service.list_users(limit=limit, offset=offset, search=search)
 
 
@@ -109,7 +102,6 @@ async def update_user_role(
     data: UpdateUserRoleRequest,
     _: dict = Depends(require_role("admin")),
 ):
-    """Change a user's role."""
     return admin_service.update_user_role(user_id, data.role)
 
 
@@ -119,7 +111,6 @@ async def ban_user(
     data: BanUserRequest,
     _: dict = Depends(require_role("admin")),
 ):
-    """Ban a user (permanent if ban_until is None)."""
     return admin_service.ban_user(user_id, data.ban_until)
 
 
@@ -128,18 +119,16 @@ async def unban_user(
     user_id: str,
     _: dict = Depends(require_role("admin")),
 ):
-    """Unban a user."""
     return admin_service.unban_user(user_id)
 
 
-# ── Content Management ────────────────────────────────────────────
+# -- Content Management --------------------------------------------------
 
 @router.post("/admin/novels/{novel_id}/pin")
 async def pin_novel(
     novel_id: str,
     _: dict = Depends(require_role("admin")),
 ):
-    """Pin a novel to the featured section."""
     return admin_service.pin_novel(novel_id)
 
 
@@ -148,7 +137,6 @@ async def unpin_novel(
     novel_id: str,
     _: dict = Depends(require_role("admin")),
 ):
-    """Unpin a novel."""
     return admin_service.unpin_novel(novel_id)
 
 
@@ -157,7 +145,6 @@ async def force_delete_novel(
     novel_id: str,
     _: dict = Depends(require_role("admin")),
 ):
-    """Admin force soft-deletes a novel."""
     admin_service.force_delete_novel(novel_id)
 
 
@@ -166,18 +153,16 @@ async def force_delete_comment(
     comment_id: str,
     _: dict = Depends(require_role("admin")),
 ):
-    """Admin force soft-deletes a comment."""
     admin_service.force_delete_comment(comment_id)
 
 
-# ── Reports ───────────────────────────────────────────────────────
+# -- Reports -------------------------------------------------------------
 
 @router.post("/reports", response_model=ReportPublic, status_code=status.HTTP_201_CREATED)
 async def create_report(
     data: ReportCreate,
     current_user: dict = Depends(get_current_user),
 ):
-    """Create a report (any authenticated user)."""
     return admin_service.create_report(data, current_user["id"])
 
 
@@ -188,7 +173,6 @@ async def list_reports(
     offset: int = 0,
     _: dict = Depends(require_role("admin")),
 ):
-    """List reports (admin only)."""
     return admin_service.list_reports(status=status, limit=limit, offset=offset)
 
 
@@ -198,20 +182,18 @@ async def resolve_report(
     data: ResolveReportRequest,
     current_user: dict = Depends(require_role("admin")),
 ):
-    """Resolve or dismiss a report (admin only)."""
     return admin_service.resolve_report(
         report_id, data.status, data.admin_note, current_user["id"]
     )
 
 
-# ── Feedbacks ─────────────────────────────────────────────────────
+# -- Feedbacks -----------------------------------------------------------
 
 @router.post("/feedbacks", response_model=FeedbackPublic, status_code=status.HTTP_201_CREATED)
 async def create_feedback(
     data: FeedbackCreate,
     current_user: Optional[dict] = Depends(get_optional_user),
 ):
-    """Submit feedback (anonymous allowed)."""
     user_id = current_user["id"] if current_user else None
     return admin_service.create_feedback(data.content, user_id)
 
@@ -223,7 +205,6 @@ async def list_feedbacks(
     offset: int = 0,
     _: dict = Depends(require_role("admin")),
 ):
-    """List feedbacks (admin only)."""
     return admin_service.list_feedbacks(status=status, limit=limit, offset=offset)
 
 
@@ -233,5 +214,66 @@ async def respond_feedback(
     data: RespondFeedbackRequest,
     _: dict = Depends(require_role("admin")),
 ):
-    """Respond to feedback (admin only)."""
     return admin_service.respond_feedback(feedback_id, data.admin_response, data.status)
+
+
+# -- Deposits (admin) ----------------------------------------------------
+
+@router.get("/admin/deposits")
+async def list_deposits(
+    status: Optional[str] = Query(None),
+    limit: int = Query(50, le=200),
+    offset: int = 0,
+    _: dict = Depends(require_admin),
+):
+    return economy_service.list_deposits_admin(status_filter=status, limit=limit, offset=offset)
+
+
+@router.patch("/admin/deposits/{deposit_id}/confirm")
+async def confirm_deposit(
+    deposit_id: str,
+    body: DepositConfirmRequest,
+    current_user: dict = Depends(require_admin),
+):
+    return economy_service.confirm_deposit(
+        deposit_id, body.amount_vnd_received, current_user["id"], body.admin_note
+    )
+
+
+@router.patch("/admin/deposits/{deposit_id}/reject")
+async def reject_deposit(
+    deposit_id: str,
+    body: AdminDepositRejectRequest,
+    current_user: dict = Depends(require_admin),
+):
+    return economy_service.reject_deposit(deposit_id, current_user["id"], body.admin_note)
+
+
+# -- Withdrawals (admin) -------------------------------------------------
+
+@router.get("/admin/withdrawals")
+async def list_withdrawals(
+    status: Optional[str] = Query(None),
+    limit: int = Query(50, le=200),
+    offset: int = 0,
+    _: dict = Depends(require_admin),
+):
+    return economy_service.list_withdrawals_admin(status_filter=status, limit=limit, offset=offset)
+
+
+@router.patch("/admin/withdrawals/{withdrawal_id}/complete")
+async def complete_withdrawal(
+    withdrawal_id: str,
+    body: AdminWithdrawalActionRequest,
+    current_user: dict = Depends(require_admin),
+):
+    return economy_service.complete_withdrawal(withdrawal_id, current_user["id"], body.admin_note)
+
+
+@router.patch("/admin/withdrawals/{withdrawal_id}/reject")
+async def reject_withdrawal(
+    withdrawal_id: str,
+    body: AdminWithdrawalActionRequest,
+    current_user: dict = Depends(require_admin),
+):
+    return economy_service.reject_withdrawal(withdrawal_id, current_user["id"], body.admin_note)
