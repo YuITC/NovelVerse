@@ -6,26 +6,54 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 NovelVerse is a Vietnamese Chinese web novel reading platform. The PRD is in `docs/PRD.md` (written in Vietnamese). Tech stack: FastAPI (Python) backend, Next.js (React) frontend, Supabase (PostgreSQL + Auth + Storage), Upstash Redis, with AI features in Phase 3 (Qdrant, Gemini API, ElevenLabs TTS).
 
-## Planned Architecture
+## Development Commands
+
+```bash
+# Backend (from backend/)
+uv sync                                    # Install dependencies
+uv run uvicorn app.main:app --reload       # Start dev server (port 8000)
+uv run pytest                              # Run tests
+uv run pytest tests/test_auth.py -v        # Run single test file
+
+# Frontend (from frontend/)
+npm install                                # Install dependencies
+npm run dev                                # Start dev server (port 3000)
+npm run build                              # Production build
+npm run lint                               # Lint
+
+# Supabase (from project root, requires Docker Desktop)
+npx supabase start                         # Start local Supabase
+npx supabase stop                          # Stop local Supabase
+npx supabase db reset                      # Reset DB and re-run migrations
+npx supabase migration new <name>          # Create new migration
+```
+
+## Architecture
 
 ```
-frontend/          # Next.js App Router (deployed to Vercel)
-  app/             # Pages and routes
-  components/      # React components
-  lib/             # Supabase client, API client utilities
+frontend/              # Next.js App Router (deployed to Vercel)
+  app/                 # Pages and routes
+  components/          # React components (shadcn/ui)
+  lib/                 # Supabase client, API client, utilities
+    supabase/client.ts # Browser Supabase client
+    supabase/server.ts # Server-side Supabase client
+    api.ts             # FastAPI fetch wrapper with JWT injection
+  proxy.ts             # Next.js 16 proxy (was "middleware") — session refresh
 
-backend/           # FastAPI (deployed to Railway)
+backend/               # FastAPI (deployed to Railway)
   app/
-    api/           # Route handlers (/api/v1/*)
-    core/          # Config, security, database connections
-    models/        # Pydantic schemas for request/response
-    services/      # Business logic layer
-    workers/       # Crawl worker (24h cron), notification worker
+    main.py            # FastAPI app entry point
+    api/v1/            # Route handlers (/api/v1/*)
+    core/              # Config, security, database connections
+      config.py        # Pydantic Settings (env vars)
+      database.py      # Supabase client (lazy init via get_supabase())
+    models/            # Pydantic schemas for request/response
+    services/          # Business logic layer
+    workers/           # Crawl worker, notification worker
+  tests/
 
 supabase/
-  migrations/      # PostgreSQL migration files
-
-docker-compose.yml # Local dev environment
+  migrations/          # PostgreSQL migration files
 ```
 
 ## Key Architecture Decisions

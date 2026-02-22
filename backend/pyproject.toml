@@ -1,0 +1,24 @@
+[project]
+name = "novelverse-backend"
+version = "0.1.0"
+description = "NovelVerse API — Vietnamese Chinese web novel reading platform"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.115.0",
+    "pydantic-settings>=2.0",
+    "supabase>=2.0",
+    "python-jose[cryptography]>=3.3",
+    "bleach>=6.0",
+    "httpx>=0.27",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+]
