@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Star, Eye, BookOpen, MessageSquare, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ChapterList } from "@/components/chapter/chapter-list";
 import type { Novel } from "@/lib/types/novel";
 
 const API_URL =
@@ -186,14 +187,10 @@ export default async function NovelDetailPage({
         </section>
       )}
 
-      {/* Chapter list placeholder */}
+      {/* Chapter list */}
       <section className="mt-10">
         <h2 className="mb-4 text-xl font-bold">Danh sách chương</h2>
-        <div className="flex min-h-[120px] items-center justify-center rounded-lg border border-dashed">
-          <p className="text-muted-foreground">
-            Tính năng danh sách chương sẽ sớm ra mắt.
-          </p>
-        </div>
+        <ChapterList novelId={novel.id} />
       </section>
     </div>
   );

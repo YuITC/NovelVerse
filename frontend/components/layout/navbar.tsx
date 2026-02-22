@@ -23,6 +23,12 @@ export function Navbar() {
           >
             Bảng xếp hạng
           </Link>
+          <Link
+            href="/library"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Thư viện
+          </Link>
         </nav>
 
         <div className="flex flex-1 items-center justify-end gap-3">
