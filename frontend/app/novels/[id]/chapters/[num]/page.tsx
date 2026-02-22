@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChapterReader } from "@/components/chapter/chapter-reader";
+import { CommentSection } from "@/components/comment/comment-section";
 import type { ChapterContent } from "@/lib/types/chapter";
 
 export const revalidate = 0;
@@ -117,6 +118,11 @@ export default async function ChapterPage({
 
       {/* Client-rendered reader (settings + content + nav) */}
       <ChapterReader chapter={chapter} novelId={id} />
+
+      {/* Chapter comments */}
+      <div className="container mx-auto max-w-2xl px-4 py-8">
+        <CommentSection novelId={id} chapterId={chapter.id} />
+      </div>
     </div>
   );
 }

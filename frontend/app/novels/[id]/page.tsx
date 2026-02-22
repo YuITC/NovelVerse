@@ -6,6 +6,8 @@ import { Star, Eye, BookOpen, MessageSquare, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChapterList } from "@/components/chapter/chapter-list";
+import { ReviewSection } from "@/components/review/review-section";
+import { CommentSection } from "@/components/comment/comment-section";
 import type { Novel } from "@/lib/types/novel";
 
 const API_URL =
@@ -192,6 +194,20 @@ export default async function NovelDetailPage({
         <h2 className="mb-4 text-xl font-bold">Danh sách chương</h2>
         <ChapterList novelId={novel.id} />
       </section>
+
+      {/* Reviews */}
+      <div className="mt-10">
+        <ReviewSection
+          novelId={novel.id}
+          avgRating={novel.avg_rating}
+          ratingCount={novel.rating_count}
+        />
+      </div>
+
+      {/* Comments */}
+      <div className="mt-10">
+        <CommentSection novelId={novel.id} />
+      </div>
     </div>
   );
 }
