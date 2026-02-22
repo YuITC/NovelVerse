@@ -4,6 +4,13 @@ CREATE TYPE novel_status AS ENUM ('ongoing', 'completed', 'dropped');
 -- Enable unaccent for Vietnamese full-text search
 CREATE EXTENSION IF NOT EXISTS unaccent;
 
+-- GENERATED ALWAYS AS STORED columns require IMMUTABLE expressions.
+-- unaccent() is only STABLE, so wrap it in an IMMUTABLE function.
+CREATE OR REPLACE FUNCTION public.immutable_unaccent(text)
+RETURNS text LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+  SELECT unaccent($1)
+$$;
+
 -- novels table
 CREATE TABLE public.novels (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -25,9 +32,9 @@ CREATE TABLE public.novels (
     is_deleted      BOOLEAN NOT NULL DEFAULT FALSE,
 
     search_vector   TSVECTOR GENERATED ALWAYS AS (
-        setweight(to_tsvector('simple', unaccent(coalesce(title, ''))), 'A') ||
-        setweight(to_tsvector('simple', unaccent(coalesce(author, ''))), 'B') ||
-        setweight(to_tsvector('simple', unaccent(coalesce(original_title, ''))), 'C')
+        setweight(to_tsvector('simple', public.immutable_unaccent(coalesce(title, ''))), 'A') ||
+        setweight(to_tsvector('simple', public.immutable_unaccent(coalesce(author, ''))), 'B') ||
+        setweight(to_tsvector('simple', public.immutable_unaccent(coalesce(original_title, ''))), 'C')
     ) STORED,
 
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
