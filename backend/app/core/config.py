@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     # AI (optional — no key means Gemini translation is unavailable)
     gemini_api_key: str = ""
 
+    # Stripe (optional — no key means Stripe payments are unavailable)
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_publishable_key: str = ""
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

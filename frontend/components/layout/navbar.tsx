@@ -29,6 +29,12 @@ export function Navbar() {
           >
             Thư viện
           </Link>
+          <Link
+            href="/vip"
+            className="font-medium text-amber-600 transition-colors hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+          >
+            VIP
+          </Link>
         </nav>
 
         <div className="flex flex-1 items-center justify-end gap-3">

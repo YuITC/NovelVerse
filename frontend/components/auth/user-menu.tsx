@@ -2,7 +2,9 @@
 
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/lib/hooks/use-user";
+import { useEffect, useState } from "react";
 import { LoginButton } from "@/components/auth/login-button";
+import { VipBadge } from "@/components/vip/vip-badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,9 +14,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { apiFetch } from "@/lib/api";
+import type { VipSubscription } from "@/lib/types/vip";
 
 export function UserMenu() {
   const { user, loading } = useUser();
+  const [vipTier, setVipTier] = useState<"pro" | "max" | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    apiFetch<VipSubscription | null>("/vip/me")
+      .then((data) => {
+        if (data?.status === "active" && data?.expires_at && new Date(data.expires_at) > new Date()) {
+          setVipTier(data.vip_tier);
+        }
+      })
+      .catch(() => {});
+  }, [user]);
 
   if (loading) {
     return <div className="h-9 w-24 animate-pulse rounded-md bg-muted" />;
@@ -52,6 +68,7 @@ export function UserMenu() {
           <span className="max-w-[120px] truncate text-sm">
             {fullName ?? user.email}
           </span>
+          {vipTier && <VipBadge tier={vipTier} />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
@@ -60,14 +77,17 @@ export function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <a href="/library">My Library</a>
+          <a href="/library">Thư viện của tôi</a>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <a href="/profile">Profile</a>
+          <a href="/profile">Hồ sơ</a>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <a href="/vip">Đăng ký VIP</a>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-          Sign out
+          Đăng xuất
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

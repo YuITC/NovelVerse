@@ -3,6 +3,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from app.core.deps import require_role
 from app.models.novel import TagCreate, TagPublic
 from app.core.database import get_supabase
+from app.services import vip_service
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -42,3 +43,26 @@ async def trigger_crawl(
     from app.workers.crawl_worker import run_crawl_job
     background_tasks.add_task(run_crawl_job, novel_id)
     return {"message": "Crawl job started", "novel_id": novel_id}
+
+
+@router.patch("/vip/{subscription_id}/confirm")
+async def confirm_vip_bank_transfer(
+    subscription_id: str,
+    current_user: dict = Depends(require_role("admin")),
+):
+    """Admin confirms a bank transfer VIP payment."""
+    return vip_service.confirm_bank_transfer(subscription_id, current_user["id"])
+
+
+@router.get("/settings")
+async def get_settings_admin(current_user: dict = Depends(require_role("admin"))):
+    return vip_service.get_system_settings()
+
+
+@router.patch("/settings/{key}")
+async def update_setting(
+    key: str,
+    body: dict,
+    current_user: dict = Depends(require_role("admin")),
+):
+    return vip_service.update_system_setting(key, body.get("value"))
