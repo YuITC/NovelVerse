@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { clsx } from "clsx";
 import type { ChapterContent } from "@/lib/types/chapter";
 import { apiFetch } from "@/lib/api";
+import { AudioNarrator } from "@/components/chapter/audio-narrator";
 
 interface ReaderSettings {
   fontSize: number;
@@ -34,6 +36,7 @@ export function ChapterReader({
     return DEFAULT_SETTINGS;
   });
   const [marked, setMarked] = useState(false);
+  const [highlightedPara, setHighlightedPara] = useState<number | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const updateSettings = (patch: Partial<ReaderSettings>) => {
@@ -61,6 +64,8 @@ export function ChapterReader({
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [marked, novelId, chapter.chapter_number]);
+
+  const lines = chapter.content.split("\n");
 
   return (
     <div className={`min-h-screen transition-colors ${BG_CLASSES[settings.bgColor]}`}>
@@ -105,12 +110,26 @@ export function ChapterReader({
         </div>
       </div>
 
+      {/* Audio narrator bar */}
+      <AudioNarrator chapter={chapter} onHighlight={setHighlightedPara} />
+
       {/* Content */}
       <article
         className="container mx-auto max-w-2xl px-4 py-8 leading-relaxed"
         style={{ fontSize: `${settings.fontSize}px`, fontFamily: "Georgia, serif" }}
       >
-        <div className="whitespace-pre-wrap">{chapter.content}</div>
+        {lines.map((line, i) => (
+          <p
+            key={i}
+            className={clsx(
+              "mb-2 min-h-[1em]",
+              highlightedPara === i &&
+                "bg-yellow-200/40 dark:bg-yellow-900/30 rounded -mx-1 px-1 transition-colors"
+            )}
+          >
+            {line || "\u00A0"}
+          </p>
+        ))}
       </article>
 
       {/* Sentinel for auto-read */}

@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     upstash_redis_url: str = ""
     upstash_redis_token: str = ""
 
+    # ElevenLabs (optional -- TTS narration disabled if not set)
+    elevenlabs_api_key: str = ""
+    elevenlabs_voice_id: str = ""
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

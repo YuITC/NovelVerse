@@ -1,5 +1,5 @@
 /**
- * AI feature types — M16 infrastructure + M17 Chat + M19 Story Intelligence.
+ * AI feature types — M16 infrastructure + M17 Chat + M18 TTS + M19 Story Intelligence.
  */
 
 export interface Character {
@@ -42,6 +42,16 @@ export interface ChatSessionListItem {
 
 export interface CharacterListResponse {
   items: Character[];
+}
+
+// M18: AI Narrator TTS
+export interface ChapterNarration {
+  id: string;
+  chapter_id: string;
+  status: "pending" | "ready" | "failed";
+  audio_url: string | null;
+  voice_id: string;
+  created_at: string;
 }
 
 // M19: stored as JSONB on novels.relationship_graph

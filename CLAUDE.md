@@ -163,11 +163,18 @@ Phase 3 AI tables: `characters`, `chat_sessions`, `novel_embeddings`. M19 (Story
 | `GET /chat/sessions/{id}`                    | Get session with full message history                 |
 | `POST /chat/sessions/{id}/message`           | Send message — SSE streaming response (VIP Max only)  |
 
+## TTS API Routes (at /api/v1/) — Phase 3 M18
+
+| Route                                        | Description                                           |
+| -------------------------------------------- | ----------------------------------------------------- |
+| `GET /tts/chapters/{chapter_id}`             | Get narration status + audio URL (auth required)      |
+| `POST /tts/chapters/{chapter_id}`            | Request ElevenLabs generation (VIP Max only); 202 new, 200 existing |
+
 ## Development Phases
 
 1. **Phase 1 (MVP)**: Core reading, crawl pipeline, comments/reviews, VIP system, virtual economy — **COMPLETE**
 2. **Phase 2**: Social features — follows/bookmarks, nominations/leaderboards, real-time notifications, CI/CD + E2E tests — **COMPLETE**
-3. **Phase 3**: AI features — Vector infra (M16) ✅, Chat with Characters RAG (M17) ✅, AI Narrator TTS (M18), Story Intelligence Dashboard: relationship graph, timeline, Q&A, arc summaries (M19) — **IN PROGRESS**
+3. **Phase 3**: AI features — Vector infra (M16) ✅, Chat with Characters RAG (M17) ✅, AI Narrator TTS (M18) ✅, Story Intelligence Dashboard: relationship graph, timeline, Q&A, arc summaries (M19) — **IN PROGRESS**
 
 See `docs/DEVELOPMENT_PLAN.md` for the full milestone roadmap.
 

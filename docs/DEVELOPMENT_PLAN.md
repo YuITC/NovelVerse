@@ -2,7 +2,7 @@
 
 > Living document. Last updated: 2026-02-23.
 > Phase 1 MVP and Phase 2 Social Features are complete (15 milestones, 160+ backend tests, 30+ frontend routes/components).
-> Phase 3 AI: M16 (vector infra) and M17 (Chat with Characters) complete. 243 backend tests passing.
+> Phase 3 AI: M16 (vector infra), M17 (Chat with Characters), and M18 (AI Narrator TTS) complete. 264 backend tests passing.
 
 ---
 
@@ -213,7 +213,7 @@ See `docs/In-App Economy Specification.md` for the full spec.
 
 ---
 
-### Milestone 18 — AI Narrator (TTS)
+### Milestone 18 — AI Narrator (TTS) ✅ Complete
 
 **18.1 — Two modes**
 - **Mode 1 (Free)**: Web Speech API — `window.speechSynthesis` for Vietnamese TTS, no cost
@@ -299,3 +299,4 @@ See `docs/In-App Economy Specification.md` for the full spec.
 | `20260222000011_notifications.sql` | notifications |
 | `20260222000012_ai_infrastructure.sql` | characters, novel_embeddings; relationship_graph + arc_timeline JSONB on novels |
 | `20260222000013_chat_sessions.sql` | chat_sessions (RAG chat history, owner RLS) |
+| `20260222000014_chapter_narrations.sql` | chapter_narrations (ElevenLabs audio cache, public read RLS); chapter-narrations Storage bucket |
