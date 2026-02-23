@@ -12,7 +12,7 @@
 | Phase 1 MVP | ✅ Complete | M0–M8 |
 | Phase 1 Patch: Economy | ✅ Complete | M9–M11 |
 | Phase 2: Social Features | ✅ Complete | M12–M15 |
-| Phase 3: AI Features | 🔜 Planned | M16–M19 |
+| Phase 3: AI Features | 🔄 In Progress | M16–M19 |
 
 ---
 
@@ -296,4 +296,4 @@ See `docs/In-App Economy Specification.md` for the full spec.
 | `20260222000009_follows_bookmarks.sql` | follows, bookmarks |
 | `20260222000010_nominations.sql` | nominations |
 | `20260222000011_notifications.sql` | notifications |
-| *(M16 migration TBD)* | characters, novel_embeddings; JSONB columns on novels for M19 graph/timeline data |
+| `20260222000012_ai_infrastructure.sql` | characters, novel_embeddings; relationship_graph + arc_timeline JSONB on novels |
