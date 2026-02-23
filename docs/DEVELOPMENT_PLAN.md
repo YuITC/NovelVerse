@@ -1,7 +1,7 @@
 # NovelVerse — Development Plan
 
-> Living document. Last updated: 2026-02-22.
-> Phase 1 MVP is complete (8 milestones, 135 backend tests, 25+ frontend routes).
+> Living document. Last updated: 2026-02-23.
+> Phase 1 MVP and Phase 2 Social Features are complete (15 milestones, 160+ backend tests, 30+ frontend routes/components).
 
 ---
 
@@ -10,9 +10,9 @@
 | Phase | Status | Milestones |
 |-------|--------|------------|
 | Phase 1 MVP | ✅ Complete | M0–M8 |
-| Phase 1 Patch: Economy | 🔄 In progress | M9–M11 |
-| Phase 2: Social Features | 🔜 Planned | M12–M15 |
-| Phase 3: AI Features | 🔜 Planned | M16–M18 |
+| Phase 1 Patch: Economy | ✅ Complete | M9–M11 |
+| Phase 2: Social Features | ✅ Complete | M12–M15 |
+| Phase 3: AI Features | 🔜 Planned | M16–M19 |
 
 ---
 
@@ -99,7 +99,7 @@ See `docs/In-App Economy Specification.md` for the full spec.
 
 ~6-8 weeks. Builds on Phase 1 economy system (gifting is the donation mechanism).
 
-### Milestone 12 — Follows + Bookmarks
+### Milestone 12 — Follows + Bookmarks ✅ Complete
 
 **12.1 — Migration `009_follows_bookmarks.sql`**
 - `follows` table (follower_id, followee_id — for users/uploaders)
@@ -117,7 +117,7 @@ See `docs/In-App Economy Specification.md` for the full spec.
 
 ---
 
-### Milestone 13 — Nominations + Leaderboards
+### Milestone 13 — Nominations + Leaderboards ✅ Complete
 
 **13.1 — Migration `010_nominations.sql`**
 - `nominations` table (user_id, novel_id, vote_count, nominated_at) with daily reset logic
@@ -135,7 +135,7 @@ See `docs/In-App Economy Specification.md` for the full spec.
 
 ---
 
-### Milestone 14 — Real-time Notifications
+### Milestone 14 — Real-time Notifications ✅ Complete
 
 **14.1 — Migration `011_notifications.sql`**
 - `notifications` table (user_id, type, payload JSONB, read_at, created_at)
@@ -158,23 +158,23 @@ See `docs/In-App Economy Specification.md` for the full spec.
 
 ---
 
-### Milestone 15 — CI/CD + Quality
+### Milestone 15 — CI/CD + Quality ✅ Complete
 
 **15.1 — GitHub Actions**
-- `.github/workflows/backend.yml`: lint (ruff), type check (mypy), pytest on PR
-- `.github/workflows/frontend.yml`: `npm run build`, `npm run lint` on PR
-- Auto-deploy: push to `main` → Railway (backend) + Vercel (frontend)
+- `.github/workflows/backend.yml`: ruff lint → mypy type check → pytest on PR
+- `.github/workflows/frontend.yml`: npm lint → build → Playwright E2E on PR
+- Auto-deploy: not automated (deploy manually to Railway/Vercel)
 
 **15.2 — Code quality**
-- Add `ruff` linting config to `pyproject.toml`
-- Add `mypy` type checking
-- Playwright E2E tests for critical user journeys (reader, uploader, admin)
+- `ruff` linting + `mypy` type checking in `pyproject.toml` dev deps
+- Playwright E2E: `frontend/e2e/smoke.spec.ts` (5 tests) + `frontend/e2e/phase2.spec.ts` (6 tests)
+- Covers: public routes, leaderboard tab-switching, auth-guard redirects, notification bell visibility
 
 ---
 
 ## Phase 3: AI Features
 
-~8-12 weeks. Requires Qdrant Cloud, Gemini API key, ElevenLabs API key.
+~10-14 weeks. Requires Qdrant Cloud, Gemini API key, ElevenLabs API key.
 
 ### Milestone 16 — Vector Infrastructure
 
@@ -229,6 +229,44 @@ See `docs/In-App Economy Specification.md` for the full spec.
 
 ---
 
+### Milestone 19 — Story Intelligence Dashboard
+
+**Access:** VIP Max tier only
+**Dependencies:** M16 (vector infrastructure + character extraction), M17 (novel_embeddings populated)
+**New backend dep:** `networkx` (relationship graph computation)
+**New frontend dep:** `d3` (graph visualization)
+
+**19.1 — Relationship Graph**
+- Extract character/entity co-mentions from chapter embeddings via Gemini structured output
+- Build weighted graph using NetworkX; store adjacency data as JSONB on `novels` table
+- `GET /ai/novels/{id}/relationships` → `{ nodes: [{id, name}], edges: [{source, target, weight}] }`
+- Frontend: D3.js force-directed graph on novel detail page (VIP Max gate)
+
+**19.2 — Story Timeline**
+- Extract key plot events per chapter using Gemini structured output
+- Store events list as JSONB (no new table needed)
+- `GET /ai/novels/{id}/timeline` → ordered list of `{ chapter_number, event_summary }`
+- Frontend: Vertical timeline component on novel detail page (VIP Max gate)
+
+**19.3 — Full-Context Q&A**
+- Stateless — no session management (unlike M17 chat which uses `chat_sessions`)
+- Full RAG without chapter-access filtering (user sees spoilers — suitable for VIP Max)
+- `POST /ai/novels/{id}/qa` body `{ question: string }`:
+  1. Embed question via Gemini `text-embedding-004`
+  2. Qdrant similarity search over full novel (no chapter filter)
+  3. Build context from top-k chunks
+  4. Gemini generates answer
+- Frontend: Q&A input + answer panel on novel detail page (VIP Max gate)
+
+**19.4 — Arc Summaries**
+- `GET /ai/novels/{id}/arc-summary?start_chapter=X&end_chapter=Y`
+- Batch Gemini calls to summarize the given chapter range; cache JSON result in Supabase Storage
+- Frontend: Chapter-range picker with summary display (VIP Max gate)
+
+**Verify:** VIP Max subscriber sees all 4 dashboard panels on novel detail page. VIP Pro and reader tier see an upgrade CTA. API endpoints return 403 for non-VIP-Max callers.
+
+---
+
 ## Testing Strategy
 
 | Scope | Tool | When |
@@ -255,6 +293,7 @@ See `docs/In-App Economy Specification.md` for the full spec.
 | `20260222000006_vip.sql` | vip_subscriptions (original), system_settings |
 | `20260222000007_reports_feedbacks.sql` | reports, feedbacks |
 | `20260222000008_economy.sql` | wallets, transactions, deposit_requests, shop_items, gift_logs, withdrawal_requests; alters vip_subscriptions |
-| `20260222000009_follows_bookmarks.sql` | *(Phase 2)* follows, bookmarks |
-| `20260222000010_nominations.sql` | *(Phase 2)* nominations |
-| `20260222000011_notifications.sql` | *(Phase 2)* notifications |
+| `20260222000009_follows_bookmarks.sql` | follows, bookmarks |
+| `20260222000010_nominations.sql` | nominations |
+| `20260222000011_notifications.sql` | notifications |
+| *(M16 migration TBD)* | characters, novel_embeddings; JSONB columns on novels for M19 graph/timeline data |

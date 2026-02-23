@@ -20,6 +20,7 @@ npm install                                # Install dependencies
 npm run dev                                # Start dev server (port 3000)
 npm run build                              # Production build
 npm run lint                               # Lint
+npx playwright test                        # Run E2E tests (requires built app)
 
 # Supabase (from project root, requires Docker Desktop)
 npx supabase start                         # Start local Supabase
@@ -74,6 +75,8 @@ supabase/
 - Cursor-based pagination for long lists
 - Supabase Realtime for live updates (comments, notifications)
 - Next.js Image Optimization for all images
+- **Supabase Realtime subscription pattern**: `useNotifications` hook (`lib/hooks/use-notifications.ts`) subscribes to INSERT events on `notifications` filtered by `user_id`, increments unread badge, and shows toast; always unsubscribes on unmount
+- **E2E testing**: Playwright at `frontend/e2e/`; config at `frontend/playwright.config.ts`; run with `npx playwright test` (requires `npm run build` first); two suites: `smoke.spec.ts` (public routes) and `phase2.spec.ts` (auth-guard and Phase 2 UI behavior)
 
 ## Backend Patterns
 
@@ -83,10 +86,13 @@ supabase/
 - Async throughout (FastAPI async support)
 - OpenCC for Han-Viet character conversion
 - Crawl sources restricted to 6 whitelisted domains
+- **DB triggers (SECURITY DEFINER)**: Notification fanout — 4 triggers on `chapters`, `comments`, `comment_likes`, `gift_logs` auto-insert into `notifications` with JSONB payloads
+- **Redis sorted sets**: Leaderboard periods (daily 48h TTL, weekly 14d TTL, monthly 60d TTL) in Upstash, with DB fallback on cache miss; see `services/nomination_service.py`
+- **VIP tier quotas**: Nomination daily allowances enforced in service layer (reader: 3/day, VIP Pro: 5/day, VIP Max: 10/day); quota reset tracked via `nominations_reset_at` on `users`
 
 ## Database
 
-19 PostgreSQL tables on Supabase. Key tables:
+23 PostgreSQL tables on Supabase. Key tables:
 
 **Content**: `users` (extends `auth.users`), `novels` (with full-text search vector), `chapters` (dual scheduling: `publish_at` vs `published_at`), `comments` (unified for novel + chapter, 1-level reply), `reviews` (1-5 stars, one per user per novel)
 
@@ -98,38 +104,61 @@ supabase/
 
 **System**: `system_settings` (key-value store: VIP prices in LT, exchange rates, limits)
 
-Phase 3 AI tables: `characters`, `chat_sessions`, `novel_embeddings`.
+**Social & Community**: `follows` (follower_id → followee_id, uploaders only; denorm `follower_count` on `users`), `bookmarks` (user_id, novel_id), `nominations` (user_id, novel_id, period — daily/weekly/monthly; mirrored in Redis sorted sets; denorm `nomination_count` on `novels`), `notifications` (user_id, type enum, payload JSONB, read_at — populated by 4 DB triggers)
+
+Phase 3 AI tables: `characters`, `chat_sessions`, `novel_embeddings`. M19 (Story Intelligence Dashboard) stores relationship graphs and timelines as JSONB columns on `novels` — no additional tables.
 
 ## External Services
 
 - **Supabase**: DB, Auth, Storage, Realtime
-- **Upstash Redis**: Rate limiting, leaderboard caching, daily votes, crawl job queue
-- **Google Gemini API**: AI translation, chat with characters (Phase 3)
+- **Upstash Redis**: Rate limiting, leaderboard caching (sorted sets), daily nomination quotas, crawl job queue
+- **Google Gemini API**: AI translation, chat with characters, story intelligence features (Phase 3)
 - **ElevenLabs**: AI TTS narration (Phase 3)
 - **Qdrant Cloud**: Vector DB for RAG (Phase 3)
-- **Resend / Supabase Email**: Notifications
+- **Resend / Supabase Email**: Transactional notifications
+- **NetworkX** *(Phase 3 M19)*: Python library for character relationship graph computation
+- **D3.js** *(Phase 3 M19)*: Frontend force-directed graph visualization for the Story Intelligence Dashboard
+
+## Social & Notification API Routes (at /api/v1/)
+
+| Route                              | Description                                          |
+| ---------------------------------- | ---------------------------------------------------- |
+| `GET /users/{id}/follow`           | Get follow status for a user                         |
+| `POST /users/{id}/follow`          | Toggle follow/unfollow an uploader                   |
+| `GET /users/me/bookmarks`          | Paginated list of current user's bookmarked novels   |
+| `GET /novels/{id}/bookmark`        | Get bookmark status for a novel                      |
+| `POST /novels/{id}/bookmark`       | Toggle bookmark on a novel                           |
+| `GET /novels/{id}/nominate`        | Get nomination status + remaining daily quota        |
+| `POST /novels/{id}/nominate`       | Toggle nomination vote (quota enforced by VIP tier)  |
+| `GET /novels/leaderboard`          | Leaderboard (`?period=daily\|weekly\|monthly`)       |
+| `GET /notifications`               | Paginated notification list, unread-first            |
+| `GET /notifications/unread-count`  | Unread badge count                                   |
+| `PATCH /notifications/{id}/read`   | Mark single notification as read                     |
+| `PATCH /notifications/read-all`    | Mark all notifications as read                       |
 
 ## Economy API Routes (at /api/v1/)
 
-| Route | Description |
-|-------|-------------|
-| `GET /economy/wallet` | User's LT + TT balances |
-| `POST /economy/deposit` | Create bank deposit request (generates transfer code) |
-| `GET /economy/shop` | List shop items (public) |
-| `POST /economy/shop/{id}/purchase` | Buy item with LT |
-| `POST /economy/shop/{id}/gift` | Gift item to uploader (LT → TT) |
-| `POST /economy/withdrawal` | Uploader requests TT withdrawal |
-| `GET /economy/transactions` | Paginated transaction ledger |
-| `POST /vip/purchase` | Buy VIP Pro/Max with LT (instant) |
-| `GET /admin/deposits` | Admin: list deposit requests |
-| `PATCH /admin/deposits/{id}/confirm` | Admin: confirm deposit, credit LT |
-| `GET /admin/withdrawals` | Admin: list withdrawal requests |
-| `PATCH /admin/withdrawals/{id}/complete` | Admin: complete withdrawal, deduct TT |
+| Route                                    | Description                                           |
+| ---------------------------------------- | ----------------------------------------------------- |
+| `GET /economy/wallet`                    | User's LT + TT balances                               |
+| `POST /economy/deposit`                  | Create bank deposit request (generates transfer code) |
+| `GET /economy/shop`                      | List shop items (public)                              |
+| `POST /economy/shop/{id}/purchase`       | Buy item with LT                                      |
+| `POST /economy/shop/{id}/gift`           | Gift item to uploader (LT → TT)                       |
+| `POST /economy/withdrawal`               | Uploader requests TT withdrawal                       |
+| `GET /economy/transactions`              | Paginated transaction ledger                          |
+| `POST /vip/purchase`                     | Buy VIP Pro/Max with LT (instant)                     |
+| `GET /admin/deposits`                    | Admin: list deposit requests                          |
+| `PATCH /admin/deposits/{id}/confirm`     | Admin: confirm deposit, credit LT                     |
+| `GET /admin/withdrawals`                 | Admin: list withdrawal requests                       |
+| `PATCH /admin/withdrawals/{id}/complete` | Admin: complete withdrawal, deduct TT                 |
 
 ## Development Phases
 
 1. **Phase 1 (MVP)**: Core reading, crawl pipeline, comments/reviews, VIP system, virtual economy — **COMPLETE**
-2. **Phase 2**: Advanced features — nominations, leaderboards, gifting/donations, notifications, CI/CD
-3. **Phase 3**: AI features — chat with characters (RAG), AI narrator (TTS)
+2. **Phase 2**: Social features — follows/bookmarks, nominations/leaderboards, real-time notifications, CI/CD + E2E tests — **COMPLETE**
+3. **Phase 3**: AI features — Chat with Characters RAG (M17), AI Narrator TTS (M18), Story Intelligence Dashboard: relationship graph, timeline, Q&A, arc summaries (M19) — **PLANNED**
 
 See `docs/DEVELOPMENT_PLAN.md` for the full milestone roadmap.
+
+See `docs/In-App Economy Specification.md` for the full economy specification.
