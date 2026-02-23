@@ -47,11 +47,13 @@ export function useChat(novelId: string, characterId: string) {
     const newSession: ChatSession = await resp.json();
     setSession(newSession);
     setMessages(newSession.messages ?? []);
+    return newSession;
   }, [novelId, characterId]);
 
   const sendMessage = useCallback(
-    async (content: string) => {
-      if (!session || isStreaming) return;
+    async (content: string, sessionOverride?: ChatSession) => {
+      const activeSession = sessionOverride ?? session;
+      if (!activeSession || isStreaming) return;
       setError(null);
 
       const token = await getAccessToken();
@@ -76,7 +78,7 @@ export function useChat(novelId: string, characterId: string) {
 
       try {
         const resp = await fetch(
-          `${API_URL}/api/v1/chat/sessions/${session.id}/message`,
+          `${API_URL}/api/v1/chat/sessions/${activeSession.id}/message`,
           {
             method: "POST",
             headers: {
@@ -100,8 +102,9 @@ export function useChat(novelId: string, characterId: string) {
         if (!reader) return;
 
         let fullText = "";
+        let streamDone = false;
 
-        while (true) {
+        while (!streamDone) {
           const { done, value } = await reader.read();
           if (done) break;
 
@@ -111,9 +114,10 @@ export function useChat(novelId: string, characterId: string) {
           for (const line of lines) {
             if (!line.startsWith("data: ")) continue;
             const token = line.slice("data: ".length);
-            if (token === "[DONE]") break;
+            if (token === "[DONE]") { streamDone = true; break; }
             if (token.startsWith("[ERROR]")) {
               setError(token.slice("[ERROR] ".length));
+              streamDone = true;
               break;
             }
             // Unescape newlines encoded in SSE

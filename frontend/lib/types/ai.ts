@@ -76,3 +76,21 @@ export interface TimelineEvent {
   chapter_number: number;
   event_summary: string;
 }
+
+// M19: API response wrappers (include status for polling)
+export interface RelationshipGraphResponse {
+  status: "not_started" | "pending" | "ready" | "failed";
+  nodes: RelationshipNode[];
+  edges: RelationshipEdge[];
+}
+
+export interface TimelineResponse {
+  status: "not_started" | "pending" | "ready" | "failed";
+  events: TimelineEvent[];
+}
+
+export interface ArcSummaryResponse {
+  summary: string;
+  start_chapter: number;
+  end_chapter: number;
+}

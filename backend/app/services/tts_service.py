@@ -1,5 +1,6 @@
 """TTS Narration service (M18) — ElevenLabs + Supabase Storage caching."""
 import logging
+from datetime import datetime, timezone
 
 import httpx
 
@@ -69,7 +70,7 @@ def request_narration(chapter_id: str) -> tuple[dict, bool]:
             return existing.data, False
         # status == "failed" → reset and retry
         supabase.table("chapter_narrations").update(
-            {"status": "pending", "audio_url": None, "updated_at": "now()"}
+            {"status": "pending", "audio_url": None, "updated_at": datetime.now(timezone.utc).isoformat()}
         ).eq("chapter_id", chapter_id).execute()
         updated = (
             supabase.table("chapter_narrations")
@@ -140,7 +141,7 @@ def generate_narration(chapter_id: str) -> None:
 
         # Mark ready
         supabase.table("chapter_narrations").update(
-            {"status": "ready", "audio_url": audio_url, "updated_at": "now()"}
+            {"status": "ready", "audio_url": audio_url, "updated_at": datetime.now(timezone.utc).isoformat()}
         ).eq("chapter_id", chapter_id).execute()
 
         logger.info("generate_narration: chapter %s ready (%d bytes)", chapter_id, len(audio_bytes))
@@ -204,7 +205,7 @@ def _mark_failed(chapter_id: str) -> None:
     """Set narration status to failed; silently ignore errors."""
     try:
         get_supabase().table("chapter_narrations").update(
-            {"status": "failed", "updated_at": "now()"}
+            {"status": "failed", "updated_at": datetime.now(timezone.utc).isoformat()}
         ).eq("chapter_id", chapter_id).execute()
     except Exception as exc:  # noqa: BLE001
         logger.warning("_mark_failed: could not update DB for chapter %s: %s", chapter_id, exc)

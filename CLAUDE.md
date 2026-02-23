@@ -170,11 +170,20 @@ Phase 3 AI tables: `characters`, `chat_sessions`, `novel_embeddings`. M19 (Story
 | `GET /tts/chapters/{chapter_id}`             | Get narration status + audio URL (auth required)      |
 | `POST /tts/chapters/{chapter_id}`            | Request ElevenLabs generation (VIP Max only); 202 new, 200 existing |
 
+## Story Intelligence API Routes (at /api/v1/) — Phase 3 M19
+
+| Route                                                             | Description                                                                     |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `GET /ai/novels/{id}/relationships`                               | Get relationship graph; triggers background compute on first call (202+pending) |
+| `GET /ai/novels/{id}/timeline`                                    | Get story timeline; triggers background compute on first call (202+pending)     |
+| `POST /ai/novels/{id}/qa`                                         | Full-context Q&A — SSE streaming, no spoiler filter (VIP Max only)              |
+| `GET /ai/novels/{id}/arc-summary?start_chapter=X&end_chapter=Y`  | Gemini arc summary for chapter range, cached in Supabase Storage (VIP Max only) |
+
 ## Development Phases
 
 1. **Phase 1 (MVP)**: Core reading, crawl pipeline, comments/reviews, VIP system, virtual economy — **COMPLETE**
 2. **Phase 2**: Social features — follows/bookmarks, nominations/leaderboards, real-time notifications, CI/CD + E2E tests — **COMPLETE**
-3. **Phase 3**: AI features — Vector infra (M16) ✅, Chat with Characters RAG (M17) ✅, AI Narrator TTS (M18) ✅, Story Intelligence Dashboard: relationship graph, timeline, Q&A, arc summaries (M19) — **IN PROGRESS**
+3. **Phase 3**: AI features — Vector infra (M16) ✅, Chat with Characters RAG (M17) ✅, AI Narrator TTS (M18) ✅, Story Intelligence Dashboard: relationship graph, timeline, Q&A, arc summaries (M19) ✅ — **COMPLETE**
 
 See `docs/DEVELOPMENT_PLAN.md` for the full milestone roadmap.
 

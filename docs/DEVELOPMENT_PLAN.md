@@ -2,7 +2,7 @@
 
 > Living document. Last updated: 2026-02-23.
 > Phase 1 MVP and Phase 2 Social Features are complete (15 milestones, 160+ backend tests, 30+ frontend routes/components).
-> Phase 3 AI: M16 (vector infra), M17 (Chat with Characters), and M18 (AI Narrator TTS) complete. 264 backend tests passing.
+> Phase 3 AI: M16 (vector infra), M17 (Chat with Characters), M18 (AI Narrator TTS), and M19 (Story Intelligence Dashboard) complete. 286 backend tests passing.
 
 ---
 
@@ -13,7 +13,7 @@
 | Phase 1 MVP | ✅ Complete | M0–M8 |
 | Phase 1 Patch: Economy | ✅ Complete | M9–M11 |
 | Phase 2: Social Features | ✅ Complete | M12–M15 |
-| Phase 3: AI Features | 🔄 In Progress | M16–M19 |
+| Phase 3: AI Features | ✅ Complete | M16–M19 |
 
 ---
 
@@ -230,7 +230,7 @@ See `docs/In-App Economy Specification.md` for the full spec.
 
 ---
 
-### Milestone 19 — Story Intelligence Dashboard
+### Milestone 19 — Story Intelligence Dashboard ✅ Complete
 
 **Access:** VIP Max tier only
 **Dependencies:** M16 (vector infrastructure + character extraction), M17 (novel_embeddings populated)
@@ -300,3 +300,4 @@ See `docs/In-App Economy Specification.md` for the full spec.
 | `20260222000012_ai_infrastructure.sql` | characters, novel_embeddings; relationship_graph + arc_timeline JSONB on novels |
 | `20260222000013_chat_sessions.sql` | chat_sessions (RAG chat history, owner RLS) |
 | `20260222000014_chapter_narrations.sql` | chapter_narrations (ElevenLabs audio cache, public read RLS); chapter-narrations Storage bucket |
+| `20260222000015_arc_summaries_storage.sql` | arc-summaries Storage bucket (private, authenticated read); caches Gemini arc summaries |

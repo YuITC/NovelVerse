@@ -9,6 +9,7 @@ import { ChapterList } from "@/components/chapter/chapter-list";
 import { ReviewSection } from "@/components/review/review-section";
 import { CommentSection } from "@/components/comment/comment-section";
 import { ChatPanel } from "@/components/ai/chat-panel";
+import { StoryIntelligencePanel } from "@/components/ai/story-intelligence-panel";
 import { BookmarkButton } from "@/components/social/bookmark-button";
 import { FollowButton } from "@/components/social/follow-button";
 import { NominateButton } from "@/components/social/nominate-button";
@@ -209,6 +210,11 @@ export default async function NovelDetailPage({
       {/* Chat with Characters (VIP Max) */}
       <div className="mt-10">
         <ChatPanel novelId={novel.id} characters={characters} />
+      </div>
+
+      {/* Story Intelligence Dashboard (VIP Max) */}
+      <div className="mt-10">
+        <StoryIntelligencePanel novelId={novel.id} />
       </div>
 
       {/* Chapter list */}

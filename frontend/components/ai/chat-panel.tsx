@@ -118,9 +118,11 @@ export function ChatPanel({ novelId, characters }: ChatPanelProps) {
     if (!trimmed || isStreaming) return;
     setInput("");
     if (!session) {
-      await createSession();
+      const newSession = await createSession();
+      if (newSession) await sendMessage(trimmed, newSession);
+    } else {
+      await sendMessage(trimmed);
     }
-    await sendMessage(trimmed);
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
