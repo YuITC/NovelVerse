@@ -37,6 +37,15 @@ def _chunk_content(text: str) -> list[str]:
                 line = line.strip()
                 if not line:
                     continue
+                # If a single line exceeds the max, slice it by character
+                while len(line) > _MAX_CHUNK_CHARS:
+                    if current:
+                        chunks.append(current.strip())
+                        current = ""
+                    chunks.append(line[:_MAX_CHUNK_CHARS])
+                    line = line[_MAX_CHUNK_CHARS:]
+                if not line:
+                    continue
                 if len(current) + len(line) + 1 > _MAX_CHUNK_CHARS:
                     if current:
                         chunks.append(current.strip())
