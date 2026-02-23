@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
 
 from app.core.deps import require_role
 from app.models.crawl import CrawlQueueItem, CrawlSourceCreate, CrawlSourcePublic, TranslateRequest
-from app.services import crawl_service
+from app.services import character_service, crawl_service, embedding_service
 
 router = APIRouter(tags=["crawl"])
 
@@ -53,9 +53,23 @@ async def translate_item(
 @router.post("/crawl/queue/{item_id}/publish", status_code=201)
 async def publish_item(
     item_id: str,
+    background_tasks: BackgroundTasks,
     current_user: dict = Depends(require_role("uploader", "admin")),
 ):
-    return crawl_service.publish_queue_item(item_id, current_user["id"])
+    chapter = crawl_service.publish_queue_item(item_id, current_user["id"])
+    if chapter and chapter.get("id") and chapter.get("novel_id"):
+        background_tasks.add_task(
+            embedding_service.embed_chapter,
+            chapter_id=chapter["id"],
+            novel_id=chapter["novel_id"],
+        )
+        background_tasks.add_task(
+            character_service.extract_characters,
+            chapter_id=chapter["id"],
+            novel_id=chapter["novel_id"],
+            chapter_number=chapter["chapter_number"],
+        )
+    return chapter
 
 
 @router.delete("/crawl/queue/{item_id}", status_code=204)

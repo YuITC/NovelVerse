@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi import status as http_status
 
 from app.core.deps import get_current_user, get_optional_user, require_role
@@ -9,7 +9,7 @@ from app.models.chapter import (
     ChapterUpdate,
     ReadingProgress,
 )
-from app.services import chapter_service
+from app.services import chapter_service, character_service, embedding_service
 
 router = APIRouter(tags=["chapters"])
 
@@ -27,9 +27,23 @@ async def list_chapters(novel_id: str):
 async def create_chapter(
     novel_id: str,
     data: ChapterCreate,
+    background_tasks: BackgroundTasks,
     current_user: dict = Depends(require_role("uploader", "admin")),
 ):
-    return chapter_service.create_chapter(novel_id, data, current_user["id"])
+    chapter = chapter_service.create_chapter(novel_id, data, current_user["id"])
+    if data.status == "published":
+        background_tasks.add_task(
+            embedding_service.embed_chapter,
+            chapter_id=chapter["id"],
+            novel_id=novel_id,
+        )
+        background_tasks.add_task(
+            character_service.extract_characters,
+            chapter_id=chapter["id"],
+            novel_id=novel_id,
+            chapter_number=chapter["chapter_number"],
+        )
+    return chapter
 
 
 @router.get("/novels/{novel_id}/chapters/{chapter_number}", response_model=ChapterContent)
@@ -46,12 +60,27 @@ async def update_chapter(
     novel_id: str,
     chapter_number: int,
     data: ChapterUpdate,
+    background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user),
 ):
     chapter = chapter_service.get_chapter(novel_id, chapter_number)
     if not chapter:
         raise HTTPException(status_code=http_status.HTTP_404_NOT_FOUND, detail="Chapter not found")
-    return chapter_service.update_chapter(novel_id, chapter_number, data, current_user["id"])
+    updated = chapter_service.update_chapter(novel_id, chapter_number, data, current_user["id"])
+    # Only trigger on status transition to published (avoids re-embedding on minor edits)
+    if data.status == "published" and chapter.get("status") != "published":
+        background_tasks.add_task(
+            embedding_service.embed_chapter,
+            chapter_id=updated["id"],
+            novel_id=novel_id,
+        )
+        background_tasks.add_task(
+            character_service.extract_characters,
+            chapter_id=updated["id"],
+            novel_id=novel_id,
+            chapter_number=updated["chapter_number"],
+        )
+    return updated
 
 
 @router.delete("/novels/{novel_id}/chapters/{chapter_number}", status_code=http_status.HTTP_204_NO_CONTENT)
