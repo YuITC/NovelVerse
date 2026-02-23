@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.api.v1.admin import router as admin_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.chapters import router as chapters_router
+from app.api.v1.chat import router as chat_router
 from app.api.v1.comments import router as comments_router
 from app.api.v1.crawl import router as crawl_router
 from app.api.v1.economy import router as economy_router
@@ -24,3 +25,4 @@ api_router.include_router(crawl_router)
 api_router.include_router(vip_router)
 api_router.include_router(economy_router)
 api_router.include_router(notifications_router)
+api_router.include_router(chat_router)

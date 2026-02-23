@@ -1,5 +1,5 @@
 /**
- * AI feature types — M16 infrastructure, consumed by M17 (Chat) and M19 (Story Intelligence).
+ * AI feature types — M16 infrastructure + M17 Chat + M19 Story Intelligence.
  */
 
 export interface Character {
@@ -17,6 +17,31 @@ export interface EmbeddingChunk {
   chunk_index: number;
   content_preview: string;
   vector_id: string;
+}
+
+// M17: Chat with Characters
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
+}
+
+export interface ChatSession {
+  id: string;
+  novel_id: string;
+  character_id: string;
+  messages: ChatMessage[];
+  created_at: string;
+}
+
+export interface ChatSessionListItem {
+  id: string;
+  character_id: string;
+  created_at: string;
+}
+
+export interface CharacterListResponse {
+  items: Character[];
 }
 
 // M19: stored as JSONB on novels.relationship_graph

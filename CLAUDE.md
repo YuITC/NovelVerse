@@ -153,11 +153,21 @@ Phase 3 AI tables: `characters`, `chat_sessions`, `novel_embeddings`. M19 (Story
 | `GET /admin/withdrawals`                 | Admin: list withdrawal requests                       |
 | `PATCH /admin/withdrawals/{id}/complete` | Admin: complete withdrawal, deduct TT                 |
 
+## Chat API Routes (at /api/v1/) — Phase 3 M17
+
+| Route                                        | Description                                           |
+| -------------------------------------------- | ----------------------------------------------------- |
+| `GET /chat/novels/{id}/characters`           | List characters for a novel (public)                  |
+| `POST /chat/sessions`                        | Create chat session for a character (VIP Max only)    |
+| `GET /chat/sessions?novel_id={id}`           | List current user's sessions for a novel              |
+| `GET /chat/sessions/{id}`                    | Get session with full message history                 |
+| `POST /chat/sessions/{id}/message`           | Send message — SSE streaming response (VIP Max only)  |
+
 ## Development Phases
 
 1. **Phase 1 (MVP)**: Core reading, crawl pipeline, comments/reviews, VIP system, virtual economy — **COMPLETE**
 2. **Phase 2**: Social features — follows/bookmarks, nominations/leaderboards, real-time notifications, CI/CD + E2E tests — **COMPLETE**
-3. **Phase 3**: AI features — Chat with Characters RAG (M17), AI Narrator TTS (M18), Story Intelligence Dashboard: relationship graph, timeline, Q&A, arc summaries (M19) — **PLANNED**
+3. **Phase 3**: AI features — Vector infra (M16) ✅, Chat with Characters RAG (M17) ✅, AI Narrator TTS (M18), Story Intelligence Dashboard: relationship graph, timeline, Q&A, arc summaries (M19) — **IN PROGRESS**
 
 See `docs/DEVELOPMENT_PLAN.md` for the full milestone roadmap.
 

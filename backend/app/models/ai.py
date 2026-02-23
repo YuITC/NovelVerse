@@ -21,3 +21,7 @@ class EmbeddingChunkPublic(BaseModel):
     content_preview: str
     vector_id: str
     model_config = {"from_attributes": True}
+
+
+class CharacterListResponse(BaseModel):
+    items: list[CharacterPublic]

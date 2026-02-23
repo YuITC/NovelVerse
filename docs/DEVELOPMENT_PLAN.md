@@ -2,6 +2,7 @@
 
 > Living document. Last updated: 2026-02-23.
 > Phase 1 MVP and Phase 2 Social Features are complete (15 milestones, 160+ backend tests, 30+ frontend routes/components).
+> Phase 3 AI: M16 (vector infra) and M17 (Chat with Characters) complete. 243 backend tests passing.
 
 ---
 
@@ -176,7 +177,7 @@ See `docs/In-App Economy Specification.md` for the full spec.
 
 ~10-14 weeks. Requires Qdrant Cloud, Gemini API key, ElevenLabs API key.
 
-### Milestone 16 — Vector Infrastructure
+### Milestone 16 — Vector Infrastructure ✅ Complete
 
 **16.1 — New tables**
 - `characters` (novel_id, name, description, traits JSONB)
@@ -191,7 +192,7 @@ See `docs/In-App Economy Specification.md` for the full spec.
 
 ---
 
-### Milestone 17 — Chat with Characters (RAG)
+### Milestone 17 — Chat with Characters (RAG) ✅ Complete
 
 **17.1 — New tables**
 - `chat_sessions` (user_id, novel_id, character_id, messages JSONB array, created_at)
@@ -297,3 +298,4 @@ See `docs/In-App Economy Specification.md` for the full spec.
 | `20260222000010_nominations.sql` | nominations |
 | `20260222000011_notifications.sql` | notifications |
 | `20260222000012_ai_infrastructure.sql` | characters, novel_embeddings; relationship_graph + arc_timeline JSONB on novels |
+| `20260222000013_chat_sessions.sql` | chat_sessions (RAG chat history, owner RLS) |

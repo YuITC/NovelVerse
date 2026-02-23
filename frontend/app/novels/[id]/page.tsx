@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { ChapterList } from "@/components/chapter/chapter-list";
 import { ReviewSection } from "@/components/review/review-section";
 import { CommentSection } from "@/components/comment/comment-section";
+import { ChatPanel } from "@/components/ai/chat-panel";
 import { BookmarkButton } from "@/components/social/bookmark-button";
 import { FollowButton } from "@/components/social/follow-button";
 import { NominateButton } from "@/components/social/nominate-button";
 import type { Novel } from "@/lib/types/novel";
+import type { CharacterListResponse } from "@/lib/types/ai";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -65,6 +67,15 @@ export default async function NovelDetailPage({
 }) {
   const { id } = await params;
   const novel = await fetchNovel(id);
+
+  // Fetch characters for Chat panel (public endpoint — no auth needed)
+  const characterData = await fetch(
+    `${API_URL}/api/v1/chat/novels/${id}/characters`,
+    { next: { revalidate: 60 } }
+  )
+    .then((r) => (r.ok ? (r.json() as Promise<CharacterListResponse>) : null))
+    .catch(() => null);
+  const characters = characterData?.items ?? [];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -194,6 +205,11 @@ export default async function NovelDetailPage({
           />
         </section>
       )}
+
+      {/* Chat with Characters (VIP Max) */}
+      <div className="mt-10">
+        <ChatPanel novelId={novel.id} characters={characters} />
+      </div>
 
       {/* Chapter list */}
       <section className="mt-10">
