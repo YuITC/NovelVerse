@@ -1,7 +1,6 @@
 """Tests for chapters API endpoints."""
 from unittest.mock import MagicMock, patch
 
-import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
@@ -12,6 +11,7 @@ client = TestClient(app)
 
 def make_token(user_id: str = "uploader-uuid", role: str = "uploader") -> str:
     from jose import jwt
+
     from app.core.config import settings
     return jwt.encode({"sub": user_id, "role": "authenticated"}, settings.supabase_jwt_secret, algorithm="HS256")
 

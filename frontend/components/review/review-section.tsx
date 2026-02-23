@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useUser } from "@/lib/hooks/use-user";
 import { apiFetch } from "@/lib/api";
 import { StarRating } from "./star-rating";
@@ -15,26 +15,22 @@ interface ReviewSectionProps {
 export function ReviewSection({ novelId, avgRating, ratingCount }: ReviewSectionProps) {
   const { user } = useUser();
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [myReview, setMyReview] = useState<Review | null>(null);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     apiFetch<Review[]>(`/novels/${novelId}/reviews?limit=10`).then(setReviews).catch(() => {});
   }, [novelId]);
 
-  useEffect(() => {
-    if (user) {
-      const mine = reviews.find((r) => r.user_id === user.id) ?? null;
-      setMyReview(mine);
-    }
-  }, [user, reviews]);
+  const myReview = useMemo(
+    () => (user ? (reviews.find((r) => r.user_id === user.id) ?? null) : null),
+    [user, reviews],
+  );
 
   function handleReviewSuccess(r: Review) {
     setReviews((prev) => {
       const filtered = prev.filter((x) => x.id !== r.id);
       return [r, ...filtered];
     });
-    setMyReview(r);
     setShowForm(false);
   }
 

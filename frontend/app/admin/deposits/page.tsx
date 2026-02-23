@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { apiFetch } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import type { AdminDeposit } from "@/lib/types/admin"
@@ -16,12 +16,12 @@ export default function AdminDepositsPage() {
   const [loading, setLoading] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
-  async function load() {
+  const load = useCallback(async () => {
     const data = await apiFetch<AdminDeposit[]>(`/admin/deposits?status=${statusFilter}`)
     setDeposits(data)
-  }
+  }, [statusFilter])
 
-  useEffect(() => { load() }, [statusFilter])
+  useEffect(() => { load() }, [load])
 
   async function handleConfirm(depositId: string) {
     const amountStr = confirmAmounts[depositId]

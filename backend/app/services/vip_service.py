@@ -1,6 +1,7 @@
-from datetime import datetime, timezone, timedelta
-from typing import Optional
-from fastapi import HTTPException, status as http_status
+from datetime import datetime, timedelta, timezone
+
+from fastapi import HTTPException
+from fastapi import status as http_status
 
 from app.core.database import get_supabase
 

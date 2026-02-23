@@ -3,8 +3,8 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from app.core.security import decode_jwt
 from app.core.database import get_supabase
+from app.core.security import decode_jwt
 
 bearer_scheme = HTTPBearer(auto_error=False)
 

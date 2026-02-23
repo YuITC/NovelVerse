@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { ChapterList } from "@/components/chapter/chapter-list";
 import { ReviewSection } from "@/components/review/review-section";
 import { CommentSection } from "@/components/comment/comment-section";
+import { BookmarkButton } from "@/components/social/bookmark-button";
+import { FollowButton } from "@/components/social/follow-button";
+import { NominateButton } from "@/components/social/nominate-button";
 import type { Novel } from "@/lib/types/novel";
 
 const API_URL =
@@ -131,6 +134,7 @@ export default async function NovelDetailPage({
                     <User className="h-4 w-4 text-muted-foreground" />
                   )}
                   {novel.uploader.username}
+                  <FollowButton followeeId={novel.uploader.id} />
                 </dd>
               </div>
             )}
@@ -170,8 +174,10 @@ export default async function NovelDetailPage({
             </span>
           </div>
 
-          <div className="mt-6">
-            <Button asChild size="lg">
+          <div className="mt-6 flex flex-wrap gap-3">
+            <BookmarkButton novelId={novel.id} />
+            <NominateButton novelId={novel.id} />
+            <Button asChild size="lg" variant="outline">
               <Link href={`/novels/${novel.id}/edit`}>Chỉnh sửa</Link>
             </Button>
           </div>

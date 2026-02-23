@@ -1,9 +1,9 @@
-from fastapi import HTTPException, status as http_status
+from fastapi import HTTPException
+from fastapi import status as http_status
 
 from app.core.database import get_supabase
 from app.core.sanitize import sanitize_html, sanitize_plain
 from app.models.comment import CommentCreate, ReviewCreate, ReviewUpdate
-
 
 # ── Comments ──────────────────────────────────────────────────────
 

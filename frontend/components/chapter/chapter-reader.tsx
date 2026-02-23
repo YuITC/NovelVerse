@@ -25,20 +25,16 @@ export function ChapterReader({
   chapter: ChapterContent;
   novelId: string;
 }) {
-  const [settings, setSettings] = useState<ReaderSettings>(DEFAULT_SETTINGS);
-  const [marked, setMarked] = useState(false);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
+  const [settings, setSettings] = useState<ReaderSettings>(() => {
+    if (typeof window === "undefined") return DEFAULT_SETTINGS;
     const stored = localStorage.getItem("nv_reader_settings");
     if (stored) {
-      try {
-        setSettings(JSON.parse(stored) as ReaderSettings);
-      } catch {
-        // ignore malformed storage
-      }
+      try { return JSON.parse(stored) as ReaderSettings; } catch { /* ignore */ }
     }
-  }, []);
+    return DEFAULT_SETTINGS;
+  });
+  const [marked, setMarked] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const updateSettings = (patch: Partial<ReaderSettings>) => {
     const next = { ...settings, ...patch };

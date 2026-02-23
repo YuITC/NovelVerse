@@ -1,4 +1,5 @@
-from fastapi import HTTPException, status as http_status
+from fastapi import HTTPException
+from fastapi import status as http_status
 
 from app.core.database import get_supabase
 from app.models.crawl import CrawlSourceCreate
@@ -84,8 +85,8 @@ def get_crawl_queue(user_id: str, limit: int = 20, offset: int = 0) -> list[dict
 
 
 def translate_queue_item(item_id: str, method: str, user_id: str) -> dict:
-    from app.services.translation_service import translate_opencc, translate_gemini
     from app.core.config import settings
+    from app.services.translation_service import translate_gemini, translate_opencc
 
     item = _verify_queue_owner(item_id, user_id)
     if item["status"] not in ("crawled", "translated"):
@@ -118,8 +119,8 @@ def translate_queue_item(item_id: str, method: str, user_id: str) -> dict:
 
 
 def publish_queue_item(item_id: str, user_id: str) -> dict:
-    from app.services.chapter_service import create_chapter
     from app.models.chapter import ChapterCreate
+    from app.services.chapter_service import create_chapter
 
     item = _verify_queue_owner(item_id, user_id)
     if item["status"] != "translated":

@@ -1,6 +1,8 @@
 """Parser for biquge-family sites (biquge.info, biquge.tv, xbiquge.la)."""
 import re
+
 from bs4 import BeautifulSoup
+
 from app.workers.parsers.base import BaseCrawlParser
 
 BIQUGE_DOMAINS = {"biquge.info", "biquge.tv", "xbiquge.la"}

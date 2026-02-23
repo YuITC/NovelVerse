@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status as http_status
+from fastapi import APIRouter, Depends
+from fastapi import status as http_status
+
 from app.core.deps import get_current_user
 from app.models.vip import VipPurchaseRequest, VipSubscriptionPublic
 from app.services import vip_service

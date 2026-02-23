@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api"
 import { UserMenu } from "@/components/auth/user-menu"
 import { SearchBar } from "@/components/search/search-bar"
 import { WalletBadge } from "@/components/economy/wallet-badge"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 import type { Wallet } from "@/lib/types/economy"
 
 export function Navbar() {
@@ -14,7 +15,7 @@ export function Navbar() {
   const [wallet, setWallet] = useState<Wallet | null>(null)
 
   useEffect(() => {
-    if (!user) { setWallet(null); return }
+    if (!user) return
     apiFetch<Wallet>("/economy/wallet").then(setWallet).catch(() => null)
   }, [user])
 
@@ -33,7 +34,7 @@ export function Navbar() {
             Truyện
           </Link>
           <Link
-            href="/rankings"
+            href="/leaderboard"
             className="text-muted-foreground transition-colors hover:text-foreground"
           >
             Bảng xếp hạng
@@ -57,6 +58,7 @@ export function Navbar() {
 
         <div className="flex flex-1 items-center justify-end gap-3">
           <SearchBar />
+          <NotificationBell />
           <UserMenu />
         </div>
       </div>

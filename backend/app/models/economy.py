@@ -1,7 +1,7 @@
-from pydantic import BaseModel, field_validator
-from decimal import Decimal
 from datetime import datetime
 from typing import Optional
+
+from pydantic import BaseModel, field_validator
 
 
 class WalletPublic(BaseModel):

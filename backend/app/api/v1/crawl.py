@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 
 from app.core.deps import require_role
-from app.models.crawl import CrawlSourceCreate, CrawlSourcePublic, CrawlQueueItem, TranslateRequest
+from app.models.crawl import CrawlQueueItem, CrawlSourceCreate, CrawlSourcePublic, TranslateRequest
 from app.services import crawl_service
 
 router = APIRouter(tags=["crawl"])

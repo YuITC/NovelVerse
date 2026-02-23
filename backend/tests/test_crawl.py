@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, patch
+
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
@@ -9,6 +11,7 @@ def make_token(user_id=None, role=None):
     user_id = user_id or "uploader-uuid"
     role = role or "uploader"
     from jose import jwt
+
     from app.core.config import settings
     return jwt.encode({"sub": user_id, "role": "authenticated"}, settings.supabase_jwt_secret, algorithm="HS256")
 

@@ -1,8 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status as http_status
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi import status as http_status
 
 from app.core.deps import get_current_user, get_optional_user, require_role
 from app.models.chapter import (
-    ChapterCreate, ChapterUpdate, ChapterListItem, ChapterContent, ReadingProgress
+    ChapterContent,
+    ChapterCreate,
+    ChapterListItem,
+    ChapterUpdate,
+    ReadingProgress,
 )
 from app.services import chapter_service
 

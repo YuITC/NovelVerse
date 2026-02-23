@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { apiFetch } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import type { AdminWithdrawal } from "@/lib/types/admin"
@@ -15,12 +15,12 @@ export default function AdminWithdrawalsPage() {
   const [loading, setLoading] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
-  async function load() {
+  const load = useCallback(async () => {
     const data = await apiFetch<AdminWithdrawal[]>(`/admin/withdrawals?status=${statusFilter}`)
     setWithdrawals(data)
-  }
+  }, [statusFilter])
 
-  useEffect(() => { load() }, [statusFilter])
+  useEffect(() => { load() }, [load])
 
   async function handleComplete(wrId: string) {
     if (!confirm("Đánh dấu đã chuyển khoản thành công?")) return

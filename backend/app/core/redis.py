@@ -1,6 +1,9 @@
 from functools import lru_cache
+
 from upstash_redis import Redis
+
 from app.core.config import settings
+
 
 @lru_cache(maxsize=1)
 def get_redis() -> Redis | None:

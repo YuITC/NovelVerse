@@ -1,11 +1,17 @@
-from fastapi import APIRouter, Depends, Query
 from typing import Optional
+
+from fastapi import APIRouter, Depends, Query
+
 from app.core.deps import get_current_user
 from app.models.economy import (
-    WalletPublic, TransactionPublic,
-    DepositCreateRequest, DepositPublic,
-    ShopItemPublic, GiftRequest, GiftLogPublic,
-    WithdrawalCreateRequest, WithdrawalPublic,
+    DepositCreateRequest,
+    DepositPublic,
+    GiftRequest,
+    ShopItemPublic,
+    TransactionPublic,
+    WalletPublic,
+    WithdrawalCreateRequest,
+    WithdrawalPublic,
 )
 from app.services import economy_service
 

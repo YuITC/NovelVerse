@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
-from typing import Optional
 
 import bleach
-from fastapi import HTTPException, status as http_status
+from fastapi import HTTPException
+from fastapi import status as http_status
 
 from app.core.database import get_supabase
 from app.models.chapter import ChapterCreate, ChapterUpdate

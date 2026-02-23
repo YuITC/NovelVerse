@@ -1,0 +1,42 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    env:
+      SUPABASE_URL: https://placeholder.supabase.co
+      SUPABASE_SERVICE_KEY: placeholder-service-key
+      SUPABASE_JWT_SECRET: placeholder-jwt-secret-32-chars-long!!
+      UPSTASH_REDIS_URL: https://placeholder.upstash.io
+      UPSTASH_REDIS_TOKEN: placeholder-token
+      GEMINI_API_KEY: placeholder-gemini-key
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - name: Lint with ruff
+        run: uv run ruff check app/ tests/
+
+      - name: Type check with mypy
+        run: uv run mypy app/ --ignore-missing-imports
+
+      - name: Run tests
+        run: uv run pytest -q

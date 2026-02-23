@@ -1,17 +1,17 @@
-from fastapi import FastAPI, Depends
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Depends, FastAPI
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.exceptions import (
     _setup_logging,
     http_exception_handler,
-    validation_exception_handler,
     unhandled_exception_handler,
+    validation_exception_handler,
 )
 from app.core.rate_limit import rate_limit
-from app.api.v1.router import api_router
 
 _setup_logging()
 

@@ -1,7 +1,8 @@
 """Tests for rate limiting middleware."""
-from unittest.mock import patch, MagicMock
-import pytest
+from unittest.mock import MagicMock, patch
+
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)

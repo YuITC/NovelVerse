@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.core.deps import get_current_user, get_optional_user, require_role
-from app.models.novel import NovelCreate, NovelUpdate, NovelPublic, NovelListItem, NovelListResponse
-from app.services import novel_service
+from app.core.deps import get_current_user, require_role
+from app.models.nomination import LeaderboardResponse, NominationStatus
+from app.models.novel import NovelCreate, NovelListItem, NovelListResponse, NovelPublic, NovelUpdate
+from app.models.social import BookmarkStatus
+from app.services import nomination_service, novel_service, social_service
 
 router = APIRouter(prefix="/novels", tags=["novels"])
 
@@ -37,6 +39,15 @@ async def get_recently_completed(limit: int = Query(12, ge=1, le=50)):
 @router.get("/tags", response_model=list[dict])
 async def get_tags():
     return novel_service.get_all_tags()
+
+
+@router.get("/leaderboard", response_model=LeaderboardResponse)
+async def get_leaderboard(
+    period: str = Query("daily", pattern="^(daily|weekly|monthly)$"),
+    limit: int = Query(20, ge=1, le=50),
+):
+    """Get top-nominated novels for the given period (daily/weekly/monthly)."""
+    return nomination_service.get_leaderboard(period, limit)
 
 
 @router.post("", response_model=NovelPublic, status_code=status.HTTP_201_CREATED)
@@ -80,3 +91,27 @@ async def delete_novel(
     if novel["uploader_id"] != current_user["id"] and current_user["role"] != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not the owner")
     novel_service.soft_delete_novel(novel_id)
+
+
+@router.get("/{novel_id}/bookmark", response_model=BookmarkStatus)
+async def get_bookmark_status(novel_id: str, current_user: dict = Depends(get_current_user)):
+    """Check if the authenticated user has bookmarked this novel."""
+    return social_service.get_bookmark_status(current_user["id"], novel_id)
+
+
+@router.post("/{novel_id}/bookmark", response_model=BookmarkStatus)
+async def toggle_bookmark(novel_id: str, current_user: dict = Depends(get_current_user)):
+    """Bookmark or un-bookmark a novel (toggle)."""
+    return social_service.toggle_bookmark(current_user["id"], novel_id)
+
+
+@router.get("/{novel_id}/nominate", response_model=NominationStatus)
+async def get_nomination_status(novel_id: str, current_user: dict = Depends(get_current_user)):
+    """Check if the authenticated user has nominated this novel today."""
+    return nomination_service.get_nomination_status(current_user["id"], novel_id)
+
+
+@router.post("/{novel_id}/nominate", response_model=NominationStatus)
+async def toggle_nominate(novel_id: str, current_user: dict = Depends(get_current_user)):
+    """Nominate or de-nominate a novel for today (toggle). Uses daily allowance."""
+    return nomination_service.nominate(current_user["id"], novel_id)

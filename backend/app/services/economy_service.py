@@ -1,11 +1,12 @@
 import secrets
 from datetime import datetime, timezone
 from typing import Optional
-from fastapi import HTTPException, status as http_status
+
+from fastapi import HTTPException
+from fastapi import status as http_status
 
 from app.core.database import get_supabase
 from app.services.vip_service import _get_setting
-
 
 # -- Wallet ------------------------------------------------------------------
 

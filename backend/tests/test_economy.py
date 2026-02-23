@@ -1,8 +1,9 @@
 """Tests for virtual economy system."""
-from unittest.mock import patch, MagicMock
 from datetime import datetime, timezone
-import pytest
+from unittest.mock import patch
+
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)

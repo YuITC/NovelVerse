@@ -1,7 +1,6 @@
 """Tests for JWT auth middleware and /auth/me endpoint."""
 from unittest.mock import MagicMock, patch
 
-import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -12,6 +11,7 @@ client = TestClient(app)
 def make_valid_token(user_id: str = "test-user-uuid") -> str:
     """Generate a real JWT signed with the configured secret (for unit tests)."""
     from jose import jwt
+
     from app.core.config import settings
 
     return jwt.encode(

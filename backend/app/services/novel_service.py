@@ -1,11 +1,10 @@
 import base64
 import json
-from datetime import datetime, timezone
+
 import bleach
 
 from app.core.database import get_supabase
 from app.models.novel import NovelCreate, NovelUpdate
-
 
 ALLOWED_HTML_TAGS = ["p", "br", "strong", "em", "ul", "ol", "li"]
 

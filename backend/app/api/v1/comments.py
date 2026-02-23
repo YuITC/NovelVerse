@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends, Query
 
-from app.core.deps import get_current_user, get_optional_user
-from app.models.comment import CommentCreate, CommentPublic, ReviewCreate, ReviewUpdate, ReviewPublic
+from app.core.deps import get_current_user
+from app.models.comment import (
+    CommentCreate,
+    CommentPublic,
+    ReviewCreate,
+    ReviewPublic,
+    ReviewUpdate,
+)
 from app.services import comment_service
 
 router = APIRouter(tags=["comments"])

@@ -1,6 +1,8 @@
 """Tests for Admin Panel API endpoints (Milestone 7)."""
 from unittest.mock import MagicMock, patch
+
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
@@ -8,6 +10,7 @@ client = TestClient(app)
 
 def make_token(user_id="user-uuid", role="reader") -> str:
     from jose import jwt
+
     from app.core.config import settings
     return jwt.encode({"sub": user_id, "role": "authenticated"}, settings.supabase_jwt_secret, algorithm="HS256")
 
@@ -98,10 +101,6 @@ class TestBanUnbanUser:
             r = client.post("/api/v1/admin/users/user-uuid/unban", headers={"Authorization": f"Bearer {token}"})
         assert r.status_code == 200; assert r.json()["is_banned"] is False
 
-class TestNovelPinUnpin:
-    def test_pin_novel_as_admin_returns_200(self):
-        token = make_token()
-        assert True
 class TestNovelPinUnpin:
     def test_pin_novel_as_admin_returns_200(self):
         token = make_token(user_id="admin-uuid", role="admin")

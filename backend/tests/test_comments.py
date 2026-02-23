@@ -11,6 +11,7 @@ client = TestClient(app)
 
 def make_token(user_id: str = "reader-uuid", role: str = "reader") -> str:
     from jose import jwt
+
     from app.core.config import settings
     return jwt.encode({"sub": user_id, "role": "authenticated"}, settings.supabase_jwt_secret, algorithm="HS256")
 
@@ -230,7 +231,7 @@ class TestToggleLike:
                    side_effect=HTTPException(status_code=404, detail="Comment not found")):
             ms.return_value = _make_user_supabase_mock(MOCK_USER_READER)
             r = client.post(
-                f"/api/v1/comments/nonexistent-id/like",
+                "/api/v1/comments/nonexistent-id/like",
                 headers={"Authorization": f"Bearer {tok}"},
             )
         assert r.status_code == 404
@@ -291,7 +292,7 @@ class TestDeleteComment:
                    side_effect=HTTPException(status_code=404, detail="Comment not found")):
             ms.return_value = _make_user_supabase_mock(MOCK_USER_READER)
             r = client.delete(
-                f"/api/v1/comments/nonexistent-id",
+                "/api/v1/comments/nonexistent-id",
                 headers={"Authorization": f"Bearer {tok}"},
             )
         assert r.status_code == 404
