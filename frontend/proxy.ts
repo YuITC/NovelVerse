@@ -24,7 +24,20 @@ export async function proxy(request: NextRequest) {
   );
 
   // IMPORTANT: This refreshes the session
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Routing Logic
+  // If the user is at "/" and is NOT logged in -> redirect to "/welcome"
+  if (!user && request.nextUrl.pathname === "/") {
+    return NextResponse.redirect(new URL("/welcome", request.url));
+  }
+
+  // If the user is at "/welcome" and IS logged in -> redirect to "/"
+  if (user && request.nextUrl.pathname === "/welcome") {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
 
   return response;
 }

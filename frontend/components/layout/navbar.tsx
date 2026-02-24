@@ -1,23 +1,29 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import { useUser } from "@/lib/hooks/use-user"
-import { apiFetch } from "@/lib/api"
-import { UserMenu } from "@/components/auth/user-menu"
-import { SearchBar } from "@/components/search/search-bar"
-import { WalletBadge } from "@/components/economy/wallet-badge"
-import { NotificationBell } from "@/components/notifications/notification-bell"
-import type { Wallet } from "@/lib/types/economy"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useUser } from "@/lib/hooks/use-user";
+import { apiFetch } from "@/lib/api";
+import { UserMenu } from "@/components/auth/user-menu";
+import { SearchBar } from "@/components/search/search-bar";
+import { WalletBadge } from "@/components/economy/wallet-badge";
+import { NotificationBell } from "@/components/notifications/notification-bell";
+import type { Wallet } from "@/lib/types/economy";
 
 export function Navbar() {
-  const { user } = useUser()
-  const [wallet, setWallet] = useState<Wallet | null>(null)
+  const { user } = useUser();
+  const [wallet, setWallet] = useState<Wallet | null>(null);
 
   useEffect(() => {
-    if (!user) return
-    apiFetch<Wallet>("/economy/wallet").then(setWallet).catch(() => null)
-  }, [user])
+    if (!user) return;
+    apiFetch<Wallet>("/economy/wallet")
+      .then(setWallet)
+      .catch(() => null);
+  }, [user]);
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
@@ -63,5 +69,5 @@ export function Navbar() {
         </div>
       </div>
     </header>
-  )
+  );
 }
