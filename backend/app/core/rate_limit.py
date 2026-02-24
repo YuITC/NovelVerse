@@ -39,7 +39,7 @@ async def rate_limit(request: Request) -> None:
     pipe.zadd(key, {str(now): now})
     pipe.zcard(key)
     pipe.expire(key, WINDOW)
-    results = pipe.execute()
+    results = pipe.exec()
 
     count = results[2]
     if count > RATE_LIMIT:
