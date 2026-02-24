@@ -3,8 +3,7 @@ import { NovelGrid } from "@/components/novel/novel-grid";
 import { Button } from "@/components/ui/button";
 import type { NovelListItem } from "@/lib/types/novel";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 async function fetchNovelList(path: string): Promise<NovelListItem[]> {
   try {
@@ -27,27 +26,6 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-secondary/10 py-20 text-center">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
-            NovelVerse
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Nền tảng đọc tiểu thuyết mạng Trung Quốc hàng đầu bằng tiếng Việt.
-            Hàng ngàn bộ truyện hay, cập nhật mỗi ngày.
-          </p>
-          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Button asChild size="lg">
-              <Link href="/novels">Khám phá truyện</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href="/upload">Đăng truyện</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
       <div className="container mx-auto space-y-12 px-4 py-12">
         {/* Featured Novels */}
         {featured.length > 0 && (

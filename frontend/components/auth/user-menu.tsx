@@ -5,6 +5,7 @@ import { useUser } from "@/lib/hooks/use-user";
 import { useEffect, useState } from "react";
 import { LoginButton } from "@/components/auth/login-button";
 import { VipBadge } from "@/components/vip/vip-badge";
+import { WalletBadge } from "@/components/economy/wallet-badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,20 +17,30 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { apiFetch } from "@/lib/api";
 import type { VipSubscription } from "@/lib/types/vip";
+import type { Wallet } from "@/lib/types/economy";
 
 export function UserMenu() {
   const { user, loading } = useUser();
   const [vipTier, setVipTier] = useState<"pro" | "max" | null>(null);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
 
   useEffect(() => {
     if (!user) return;
     apiFetch<VipSubscription | null>("/vip/me")
       .then((data) => {
-        if (data?.status === "active" && data?.expires_at && new Date(data.expires_at) > new Date()) {
+        if (
+          data?.status === "active" &&
+          data?.expires_at &&
+          new Date(data.expires_at) > new Date()
+        ) {
           setVipTier(data.vip_tier);
         }
       })
       .catch(() => {});
+
+    apiFetch<Wallet>("/economy/wallet")
+      .then(setWallet)
+      .catch(() => null);
   }, [user]);
 
   if (loading) {
@@ -77,10 +88,16 @@ export function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <a href="/library">Thư viện của tôi</a>
+          <a href="/profile">Hồ sơ</a>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <a href="/profile">Hồ sơ</a>
+          <a
+            href="/wallet"
+            className="flex w-full items-center justify-between"
+          >
+            <span>Ví</span>
+            {wallet && <WalletBadge balance={wallet.linh_thach} />}
+          </a>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <a href="/vip">Đăng ký VIP</a>

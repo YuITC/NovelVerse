@@ -6,20 +6,10 @@ import { useUser } from "@/lib/hooks/use-user";
 import { apiFetch } from "@/lib/api";
 import { UserMenu } from "@/components/auth/user-menu";
 import { SearchBar } from "@/components/search/search-bar";
-import { WalletBadge } from "@/components/economy/wallet-badge";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import type { Wallet } from "@/lib/types/economy";
 
 export function Navbar() {
   const { user } = useUser();
-  const [wallet, setWallet] = useState<Wallet | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    apiFetch<Wallet>("/economy/wallet")
-      .then(setWallet)
-      .catch(() => null);
-  }, [user]);
 
   if (!user) {
     return null;
@@ -51,15 +41,6 @@ export function Navbar() {
           >
             Thư viện
           </Link>
-          {user && (
-            <Link
-              href="/wallet"
-              className="flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Ví
-              {wallet && <WalletBadge balance={wallet.linh_thach} />}
-            </Link>
-          )}
         </nav>
 
         <div className="flex flex-1 items-center justify-end gap-3">
